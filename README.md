@@ -1,6 +1,6 @@
 # Nolatility
 
-**Nolatility** is an experimental crypto dashboard designed to reduce the emotional impact of market volatility. Instead of showing live, fluctuating spot prices, it displays a **90-day Exponential Moving Average (EMA)**, helping users focus on long-term trends rather than short-term noise.
+**Nolatility** is an experimental crypto dashboard designed to reduce the emotional impact of market volatility. Instead of showing live, fluctuating spot prices, it displays a **30-day Exponential Moving Average (EMA)**, helping users focus on long-term trends rather than short-term noise.
 
 ## Features
 

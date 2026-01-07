@@ -34,7 +34,7 @@ export const CryptoCard = ({ name, symbol, image, calmPrice, onClick, isSelected
           </div>
           {calmPrice && (
             <div className="flex items-center justify-end space-x-1 text-xs text-muted-foreground">
-              <span>Calm Price (30d EMA)</span>
+              <span>Calm Price</span>
             </div>
           )}
         </div>

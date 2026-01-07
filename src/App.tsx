@@ -3,6 +3,20 @@ import { getCoins, getCoinHistory, type CoinData, type ChartData } from './servi
 import { CryptoCard } from './components/CryptoCard';
 import { TrendChart } from './components/TrendChart';
 import { Activity } from 'lucide-react';
+import { siGithub, siX } from 'simple-icons';
+
+// Simple Icon component helper
+const SimpleIcon = ({ icon, className }: { icon: any, className?: string }) => (
+  <svg 
+    role="img" 
+    viewBox="0 0 24 24" 
+    className={className} 
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d={icon.path} />
+  </svg>
+);
 
 const getCalmPrice = (historyData: ChartData[]) => {
   if (historyData.length === 0) return null;
@@ -147,9 +161,9 @@ function App() {
           </div>
         </main>
         
-        <footer className="mt-20 border-t pt-10">
+        <footer className="mt-20 border-t pt-10 pb-10">
            <h2 className="mb-8 text-2xl font-bold tracking-tight">Frequently Asked Questions</h2>
-           <div className="grid gap-6 md:grid-cols-2">
+           <div className="grid gap-6 md:grid-cols-2 mb-16">
              <div className="space-y-2">
                <h3 className="font-semibold text-lg">What is a "Calm Price"?</h3>
                <p className="text-muted-foreground">
@@ -176,8 +190,25 @@ function App() {
              </div>
            </div>
            
-           <div className="mt-16 text-center text-sm text-muted-foreground">
-             Made by <a href="https://x.com/inantworks" target="_blank" rel="noreferrer" className="font-medium text-foreground hover:underline">inant</a>
+           <div className="flex flex-col items-center justify-center space-y-4 border-t pt-8 text-sm text-muted-foreground md:flex-row md:space-y-0 md:space-x-8">
+             <a 
+               href="https://x.com/inantworks" 
+               target="_blank" 
+               rel="noreferrer" 
+               className="flex items-center space-x-2 transition-colors hover:text-foreground"
+             >
+               <SimpleIcon icon={siX} className="h-3 w-3" />
+               <span>Made by inant</span>
+             </a>
+             <a 
+               href="https://github.com/inantworks/nolatility" 
+               target="_blank" 
+               rel="noreferrer" 
+               className="flex items-center space-x-2 transition-colors hover:text-foreground"
+             >
+               <SimpleIcon icon={siGithub} className="h-4 w-4" />
+               <span>Open Source</span>
+             </a>
            </div>
         </footer>
       </div>

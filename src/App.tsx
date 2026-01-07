@@ -175,6 +175,10 @@ function App() {
                </p>
              </div>
            </div>
+           
+           <div className="mt-16 text-center text-sm text-muted-foreground">
+             Made by <a href="https://x.com/inantworks" target="_blank" rel="noreferrer" className="font-medium text-foreground hover:underline">inant</a>
+           </div>
         </footer>
       </div>
     </div>

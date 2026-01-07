@@ -34,7 +34,7 @@ const getFromCache = <T>(key: string): T | null => {
 
     return parsed.data;
   } catch (e) {
-    return null;
+    return null; // eslint-disable-line @typescript-eslint/no-unused-vars
   }
 };
 
@@ -50,20 +50,80 @@ const setCache = <T>(key: string, data: T) => {
   }
 };
 
+// Simple rate limiter queue
+class RateLimiter {
+  private queue: Array<() => Promise<void>> = [];
+  private processing = false;
+  private lastRequestTime = 0;
+  private minDelay = 1200; // Minimum ms between requests
+
+  async add<T>(requestFn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const result = await requestFn();
+          resolve(result);
+        } catch (e) {
+          reject(e);
+        }
+      });
+      this.process();
+    });
+  }
+
+  private async process() {
+    if (this.processing) return;
+    this.processing = true;
+
+    while (this.queue.length > 0) {
+      const now = Date.now();
+      const timeSinceLast = now - this.lastRequestTime;
+
+      if (timeSinceLast < this.minDelay) {
+        await new Promise((r) => setTimeout(r, this.minDelay - timeSinceLast));
+      }
+
+      const task = this.queue.shift();
+      if (task) {
+        this.lastRequestTime = Date.now();
+        await task();
+      }
+    }
+
+    this.processing = false;
+  }
+}
+
+const limiter = new RateLimiter();
+
+const rateLimitedFetch = (url: string) => {
+  return limiter.add(async () => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw { status: 429, message: "Rate limit exceeded" };
+      }
+      throw new Error(`Failed to fetch: ${response.statusText}`);
+    }
+    return response;
+  });
+};
+
 export const getCoins = async (): Promise<CoinData[]> => {
   const CACHE_KEY = "coins_list";
   const cached = getFromCache<CoinData[]>(CACHE_KEY);
   if (cached) return cached;
 
   // Fetch top coins to get ID, symbol, image, current price (as reference, though we use EMA)
+  // We don't rate limit this one as strictly since it's the initial load
   const response = await fetch(
     `${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch coins");
   }
-  const data = response.json();
-  data.then((d) => setCache(CACHE_KEY, d));
+  const data = await response.json();
+  setCache(CACHE_KEY, data);
   return data;
 };
 
@@ -75,15 +135,10 @@ export const getCoinHistory = async (
   const cached = getFromCache<ChartData[]>(CACHE_KEY);
   if (cached) return cached;
 
-  const response = await fetch(
+  const response = await rateLimitedFetch(
     `${COINGECKO_API}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily`
   );
-  if (!response.ok) {
-    if (response.status === 429) {
-      throw { status: 429, message: "Rate limit exceeded" };
-    }
-    throw new Error("Failed to fetch history");
-  }
+
   const data = await response.json();
   const prices: [number, number][] = data.prices;
 

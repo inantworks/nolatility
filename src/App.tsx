@@ -28,32 +28,15 @@ function App() {
         }
 
         // Fetch histories for all coins to display calm prices in the list
-        // Note: In a production app, we should be careful with rate limits here.
-        // Since we only fetch 5-20 coins, this is acceptable for the demo IF we throttle.
         const fetchAllHistories = async () => {
           for (const coin of data) {
-            let retries = 0;
-            const maxRetries = 3;
-            
-            while (retries < maxRetries) {
-              try {
-                // Add a small delay to avoid hitting rate limits (CoinGecko free tier ~10-30 req/min)
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                const historyData = await getCoinHistory(coin.id);
-                const calm = getCalmPrice(historyData);
-                setCalmPrices(prev => ({ ...prev, [coin.id]: calm }));
-                break; // Success, move to next coin
-              } catch (e: any) {
-                if (e.status === 429) {
-                  retries++;
-                  console.warn(`Rate limit hit for ${coin.id}, retrying in ${10 * retries}s...`);
-                  await new Promise(resolve => setTimeout(resolve, 10000 * retries));
-                } else {
-                  console.error(`Failed to fetch history for ${coin.id}`, e);
-                  break; // Non-retryable error
-                }
-              }
+            try {
+              // The service now handles rate limiting and queueing
+              const historyData = await getCoinHistory(coin.id);
+              const calm = getCalmPrice(historyData);
+              setCalmPrices(prev => ({ ...prev, [coin.id]: calm }));
+            } catch (e) {
+              console.error(`Failed to fetch history for ${coin.id}`, e);
             }
           }
         };
